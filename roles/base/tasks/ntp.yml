@@ -1,0 +1,22 @@
+---
+### NTP server setup
+
+- name: NTP setup - systemd-timesyncd.service
+  service:
+    name: systemd-timesyncd.service
+    state: stopped
+    enabled: no
+
+- name: NTP setup - packages installation
+  apt:
+    name: ntp
+    state: present
+    force_apt_get: yes
+
+- name: Configure NTP
+  template:
+    src: roles/base/templates/ntp.conf.j2
+    dest: /etc/ntp.conf
+  notify: restart ntp
+
+# vi: set expandtab:

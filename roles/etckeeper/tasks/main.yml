@@ -1,0 +1,35 @@
+---
+
+- name: etckeeper installation
+  apt:
+    name: "{{ packages }}"
+    state: present
+    autoclean: yes
+    autoremove: yes
+    update_cache: no
+    force_apt_get: yes
+  vars:
+    packages:
+    - git
+    - etckeeper
+  notify:
+    - etckeeper repo init
+    - commit to etckeeper repo
+
+- name: etckeeper configuration
+  lineinfile:
+    path: /etc/etckeeper/etckeeper.conf
+    regexp: "{{ item.key }}"
+    line: "{{ item.line }}"
+    state: "{{ item.state }}"
+    backup: no
+  loop:
+    - key: "^#VCS="
+      line: "whatever"
+      state: absent
+    - key: "^VCS="
+      line: "VCS=\"git\""
+      state: present
+  notify: commit to etckeeper repo
+
+# vi: set expandtab:

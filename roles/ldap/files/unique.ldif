@@ -1,0 +1,12 @@
+# ldapmodify -Y EXTERNAL -H ldapi:/// -f unique.ldif
+
+dn: olcOverlay=unique,olcDatabase={1}mdb,cn=config
+changetype: add
+objectClass: olcConfig
+objectClass: olcOverlayConfig
+objectClass: olcUniqueConfig
+objectClass: top
+olcOverlay: unique
+olcUniqueURI: ldap:///?mail?sub?
+olcUniqueURI: ldap:///?uid?sub?
+olcUniqueURI: ldap:///?uidNumber?sub?

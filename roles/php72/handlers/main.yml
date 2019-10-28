@@ -1,0 +1,9 @@
+---
+
+- name: php72-fpm restart
+  service:
+    name: php7.2-fpm
+    state: restarted
+  tags: php72
+
+# vi: set expandtab

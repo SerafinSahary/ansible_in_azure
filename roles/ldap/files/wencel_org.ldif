@@ -1,0 +1,74 @@
+# extended LDIF
+#
+# LDAPv3
+# base <dc=wencel,dc=org> with scope subtree
+# filter: (objectclass=*)
+# requesting: ALL
+#
+
+# wencel.org
+dn: dc=wencel,dc=org
+objectClass: top
+objectClass: dcObject
+objectClass: organization
+o: wencel.org
+dc: wencel
+
+# admin, wencel.org
+dn: cn=admin,dc=wencel,dc=org
+objectClass: simpleSecurityObject
+objectClass: organizationalRole
+cn: admin
+description: LDAP administrator
+userPassword:: e1NTSEF9enZiUXZDdithVFM0V0YyK2RSRG9FdE5qanNkUWJJQWc=
+
+# ldapaccess, wencel.org
+dn: cn=ldapaccess,dc=wencel,dc=org
+cn: ldapaccess
+objectClass: groupOfNames
+objectClass: top
+member: cn=admin,dc=wencel,dc=org
+member: uid=serafin,ou=users,dc=wencel,dc=org
+description: grupa do nadawania accessu do LDAPa
+
+# users, wencel.org
+dn: ou=users,dc=wencel,dc=org
+ou: users
+objectClass: top
+objectClass: organizationalUnit
+
+# groups, wencel.org
+dn: ou=groups,dc=wencel,dc=org
+ou: groups
+objectClass: top
+objectClass: organizationalUnit
+
+# serafin, groups, wencel.org
+dn: cn=serafin,ou=groups,dc=wencel,dc=org
+objectClass: posixGroup
+objectClass: top
+cn: intalio
+userPassword:: e2NyeXB0fXg=
+gidNumber: 1001
+memberUid: serafin
+
+# serafin, users, wencel.org
+dn: uid=serafin,ou=users,dc=wencel,dc=org
+uid: serafin
+objectClass: account
+objectClass: posixAccount
+objectClass: top
+objectClass: shadowAccount
+userPassword:: e2NyeXB0fSQ2JHBEa3c3RTJuJDhWaDQ4amQuRlI4Rld6Lkp2bUpUZXg3R3hqam9
+ TTFJMTmk1dnd5cEJsTTNMM1NsSjREZG5vUnl0Z0R5QmZsOGxGZHNSYkNwakswL2QzajZYbWRVSjYu
+shadowLastChange: 16878
+shadowMax: 99999
+loginShell: /bin/bash
+uidNumber: 1001
+gidNumber: 1001
+homeDirectory: /home/serafin
+gecos: Jarek
+description: Jarek Wencel
+cn: Jarek Wencel
+cn: Ser@fin
+

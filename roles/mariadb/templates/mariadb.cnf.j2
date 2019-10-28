@@ -1,0 +1,17 @@
+# MariaDB-specific config file.
+# Read by /etc/mysql/my.cnf
+
+[client]
+# Default is Latin1, if you need UTF-8 set this (also in server section)
+default_character_set = {{ mariadb_conf.default_character_set }}
+
+[mysqld]
+#
+# * Character sets
+#
+# Default is Latin1, if you need UTF-8 set all this (also in client section)
+#
+character_set_server  = {{ mariadb_conf.character_set_server }}
+collation_server      = {{ mariadb_conf.collation_server }}
+# Import all .cnf files from configuration directory
+!includedir /etc/mysql/mariadb.conf.d/

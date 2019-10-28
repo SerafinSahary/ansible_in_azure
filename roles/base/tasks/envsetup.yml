@@ -1,0 +1,37 @@
+---
+### Environment setup
+
+- name: environment setup - dotfiles
+  copy:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+    force: yes
+    backup: yes
+  with_items:
+   - { src: 'roles/base/files/vimrc', dest: '/root/.vimrc' }
+   - { src: 'roles/base/files/screenrc', dest: '/root/.screenrc' }
+   - { src: 'roles/base/files/screenrc', dest: '/etc/skel/.screenrc' }
+   - { src: 'roles/base/files/tmout.sh', dest: '/etc/profile.d/tmout.sh' }
+
+- name: bashrc for root - color prompt
+  lineinfile:
+    path: /root/.bashrc
+    regexp: ^[#\s]?force_color_prompt=yes
+    line: force_color_prompt=yes
+
+- name: bashrc for root - red prompt
+  replace:
+    path: /root/.bashrc
+    regexp: ^(\s+PS1=.*);32m(.*)$
+    replace: \1;31m\2
+
+- name: bashrc for root - command aliases
+  blockinfile:
+    path: /root/.bashrc
+    block: |
+      alias rm='rm -i'
+      alias cp='cp -i'
+      alias mv='mv -i'
+      set -o vi
+
+# vi: set expandtab:

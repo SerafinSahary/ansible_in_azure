@@ -1,0 +1,22 @@
+---
+### Firewall service
+
+- name: restart firewall
+  service:
+    name: netfilter-persistent
+    state: restarted
+  tags: firewall
+
+- name: restart ntp
+  service:
+    name: ntp
+    state: restarted
+  tags: ntp
+
+- name: restart ssh
+  service:
+    name: ssh
+    state: restarted
+  tags: sshsetup
+
+# vi: set expandtab:

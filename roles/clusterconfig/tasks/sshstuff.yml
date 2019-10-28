@@ -1,0 +1,34 @@
+
+- name: collect SSH public keys
+  fetch:
+    src: "{{ item }}"
+    dest: ssh-keys/{{ inventory_hostname }}/
+    flat: yes
+  with_items:
+    - /root/.ssh/id_rsa.pub
+    - /etc/ssh/ssh_host_ecdsa_key.pub
+  tags: sshsetup
+  register: sshkeyscollect
+
+- name: building authorized_keys file
+  command:
+    argv: "{{ playbook_dir }}/ssh-keys/generate_authorized_keys_file.sh"
+    chdir: "{{ playbook_dir }}/ssh-keys/"
+    creates: "{{ playbook_dir }}/ssh-keys/authorized_keys"
+  delegate_to: localhost
+  become: no
+  run_once: true
+  register: sshkeysbuildauthkeysfile
+  tags: sshsetup
+
+- name: authorized_keys file
+  #when: "{{ sshkeysbuildauthkeysfile.changed | default(true) }}"
+  #when: sshkeysbuildauthkeysfile.changed
+  copy:
+    src: "{{ playbook_dir }}/ssh-keys/authorized_keys"
+    dest: /root/.ssh/authorized_keys
+    force: yes
+    backup: yes
+  tags: sshsetup
+
+# vi: set expandtab:

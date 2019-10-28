@@ -1,0 +1,60 @@
+
+- name: ensure directories are present
+  loop: "{{ nfs_exports }}"
+  file:
+    path: "{{ item.dir }}"
+    state: directory
+    owner: root
+    group: root
+    mode: 0751
+
+## server part
+- name: nfs server install
+  when: master_node
+  apt:
+    name: nfs-kernel-server
+    state: present
+    update_cache: no
+    force_apt_get: yes
+
+- name: create exports file
+  when: master_node
+  template:
+    src: exports.j2
+    dest: /etc/exports
+    owner: root
+    group: root
+    mode: 0644
+  register: exportfschange
+
+- name: ensure nfs is running
+  when: master_node
+  service:
+    name: nfs-kernel-server
+    state: started
+    enabled: yes
+
+- name: reload nfs exports
+  when: exportfschange.changed
+  command: 'exportfs -ra'
+
+## client part
+- name: nfs client install
+  when: not master_node or master_node is undefined
+  apt:
+    name: nfs-common
+    state: present
+    update_cache: no
+    force_apt_get: yes
+
+- name: mounting nfs dirs
+  when: not master_node or master_node is undefined
+  loop: "{{ nfs_exports }}"
+  mount:
+    path: "{{ item.dir }}"
+    src: "{{ nfs_server_ip }}:{{ item.dir }}"
+    fstype: nfs
+    state: mounted
+    opts: _netdev,noatime,rw,rsize=32768,wsize=32768,intr
+
+# vi: set expandtab:

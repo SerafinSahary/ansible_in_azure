@@ -1,0 +1,30 @@
+# SSH keys for root
+
+- name: generate SSH keys for root
+  shell: ssh-keygen -b 2048 -t rsa -f /root/.ssh/id_rsa -q -N ""
+  args:
+    creates: /root/.ssh/id_rsa
+  register: sshkeys4rootgenerate
+  tags: sshsetup
+
+- name: modify sshd_config file - directives
+  lineinfile:
+    path: /etc/ssh/sshd_config
+    regexp: "^#?{{ item.key }}\\s"
+    line: "{{ item.key }} {{ item.val }}"
+    state: present
+    validate: /usr/sbin/sshd -tf %s
+  loop: "{{ sshd_config }}"
+  notify: restart ssh
+  tags: sshsetup
+
+- name: modify sshd_config file - extra block
+  blockinfile:
+    path: /etc/ssh/sshd_config
+    block: "{{ sshd_config_extra }}"
+    validate: /usr/sbin/sshd -tf %s
+  notify: restart ssh
+  tags: sshsetup
+
+
+# vi: set expandtab:

@@ -1,0 +1,32 @@
+---
+### Basic firewall setup using iptables
+
+- name: firewall setup - ufw removal
+  apt:
+    name: ufw
+    state: absent
+    purge: yes
+    force_apt_get: yes
+  tags: firewall
+
+- name: firewall setup - packages installation
+  apt:
+    name: [iptables-persistent, netfilter-persistent]
+    state: present
+    force_apt_get: yes
+  tags: firewall
+
+- name: firewall setup - initial config
+  register: firewalsetup
+  template:
+    src: roles/base/templates/rules.v4.j2
+    dest: /etc/iptables/rules.v4
+    owner: root
+    group: root
+    mode: 0644
+    force: yes
+    backup: yes
+  notify: restart firewall
+  tags: firewall
+
+# vi: set expandtab:

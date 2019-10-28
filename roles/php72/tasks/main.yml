@@ -1,0 +1,79 @@
+---
+
+- name: php v7.2 packeges install
+  apt:
+    name: "{{ php72_packages }}"
+    state: present
+    update_cache: no
+    force_apt_get: yes
+  tags: php72
+
+- name: create directory for php7.2 logs
+  file:
+    path: /var/log/php7.2
+    state: directory
+    owner: root
+    group: root
+    mode: 0753
+  tags: php72
+
+- name: prepare php.ini configuration file for php7.2-cli
+  lineinfile:
+    path: /etc/php/7.2/cli/php.ini
+    backup: yes
+    state: present
+    regexp: ^[#;\s]?{{ item.directive }}[\s\t=]
+    line: "{{ item.directive }} = {{ item.value }}"
+  loop: "{{ php72_cli_ini | dict2items(key_name='directive', value_name='value') }}"
+  tags: php72
+
+- name: prepare php.ini configuration file for php7.2-fpm
+  lineinfile:
+    path: /etc/php/7.2/fpm/php.ini
+    backup: yes
+    state: present
+    regexp: ^[#;\s]?{{ item.directive }}[\s\t=]
+    line: "{{ item.directive }} = {{ item.value }}"
+  loop: "{{ php72_fpm_ini | dict2items(key_name='directive', value_name='value') }}"
+  notify: php72-fpm restart
+  tags: php72
+
+- name: prepare php-fpm.conf configuration file for php7.2-fpm
+  lineinfile:
+    path: /etc/php/7.2/fpm/php-fpm.conf
+    backup: yes
+    state: present
+    regexp: ^[#;\s]?{{ item.directive }}[\s\t=]
+    line: "{{ item.directive }} = {{ item.value }}"
+  loop: "{{ php72_fpm_conf | dict2items(key_name='directive', value_name='value') }}"
+  notify: php72-fpm restart
+  tags: php72
+
+- name: cleanup php pools configuration
+  command: "find /etc/php/7.2/fpm/pool.d -type f -exec rm '{}' ';'"
+  notify: php72-fpm restart
+  tags: php72
+
+- name: ensure pools directory exist
+  loop: "{{ php72_pools }}"
+  file:
+    path: "{{ item.pool_dir }}"
+    state: directory
+    owner: "{{ item.user }}"
+    group: "{{ item.group }}"
+    mode: 0751
+  run_once: true
+  tags: php72
+
+- name: create php pools configuration
+  loop: "{{ php72_pools }}"
+  template:
+    src: php_pool_tpl.conf.j2
+    dest: "/etc/php/7.2/fpm/pool.d/{{ item.name }}.conf"
+    owner: root
+    group: root
+    mode: 0644
+  notify: php72-fpm restart
+  tags: php72
+
+# vi: set expandtab

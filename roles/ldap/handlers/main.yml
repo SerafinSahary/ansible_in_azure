@@ -1,0 +1,21 @@
+---
+
+- name: restart slapd
+  service:
+    name: slapd
+    state: restarted
+  tags: ldap
+
+- name: restart nslcd
+  service:
+    name: nslcd
+    state: restarted
+  tags: ldap
+
+- name: restart rsyslog
+  service:
+    name: rsyslog
+    state: restarted
+  tags: ldap
+
+# vi: set expandtab

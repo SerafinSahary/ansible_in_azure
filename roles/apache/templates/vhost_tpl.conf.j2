@@ -1,0 +1,92 @@
+#jinja2: lstrip_blocks: True
+
+{% for vhost in item.vhosts %}
+  <VirtualHost *:{{ vhost.port }}>
+    DocumentRoot "{{ vhost.directory }}"
+    ServerName {{ vhost.name }}
+    {% if vhost.alias is defined %}
+    {% if vhost.alias is iterable and vhost.alias is not string %}
+      {% for al in vhost.alias %}
+      ServerAlias {{ al }}
+      {% endfor %}
+    {% else %}
+      ServerAlias {{ vhost.alias }}
+    {% endif %}
+    {% endif %}
+
+    ServerAdmin {{ item.serveradmin }}
+
+    Protocols h2 http/1.1
+
+    ErrorLog ${APACHE_LOG_DIR}/{{ item.name }}-error.log
+    CustomLog ${APACHE_LOG_DIR}/{{ item.name }}-access.log vhost_combined_time env=!image-request
+
+    {% if vhost.ssl is defined %}
+    SSLEngine on
+    SSLCertificateFile {{ vhost.ssl.cert_file }}
+    SSLCertificateKeyFile {{ vhost.ssl.key_file }}
+    SSLCertificateChainFile {{ vhost.ssl.chain_file }}
+    {% endif %}
+
+    {% if vhost.fcgi_port is defined %}
+    <FilesMatch \.php$>
+      SetHandler "proxy:fcgi://127.0.0.1:{{ vhost.fcgi_port }}"
+    </FilesMatch>
+
+    <Proxy "fcgi://127.0.0.1/:{{ vhost.fcgi_port }}" enablereuse=on max=100>
+    </Proxy>
+
+    SetEnvIf Authorization "(.*)" HTTP_AUTHORIZATION=$1
+    {% if vhost.fcgi_script_filename_translate is defined %}
+    ProxyFCGISetEnvIf "reqenv('SCRIPT_FILENAME') =~ m|{{ vhost.directory }}/(.*)|" SCRIPT_FILENAME "/var/www/$1"
+    {% endif %}
+    {% endif %}
+
+    {% if vhost.setenv is defined %}
+    {% for name, value in vhost.setenv.items() %}
+    SetEnv {{ name }} {{ value }}
+    {% endfor %}
+    {% endif %}
+
+    {% if vhost.proxyurl is defined %}
+    ProxyPass "/" "{{ vhost.proxyurl }}"
+    ProxyPassReverse "/" "{{ vhost.proxyurl }}"
+
+    #<Proxy {{ vhost.proxyurl }}*>
+    #  Order deny,allow
+    #  Allow from all
+    #</Proxy>
+    {% endif %}
+  </VirtualHost>
+
+{% endfor %}
+
+{% if item.redirects is defined %}
+{% for redirect in item.redirects %}
+  <VirtualHost *:{{ redirect.port }}>
+    ServerName {{ redirect.name }}
+    {% if redirect.alias is defined %}
+    {% if redirect.alias is iterable and redirect.alias is not string %}
+      {% for al in redirect.alias %}
+      ServerAlias {{ al }}
+      {% endfor %}
+    {% else %}
+      ServerAlias {{ redirect.alias }}
+    {% endif %}
+    {% endif %}
+
+    {% if redirect.ssl is defined %}
+    SSLEngine on
+    SSLCertificateFile {{ redirect.ssl.cert_file }}
+    SSLCertificateKeyFile {{ redirect.ssl.key_file }}
+    SSLCertificateChainFile {{ redirect.ssl.chain_file }}
+    {% endif %}
+
+    Redirect {{ redirect.code }} / {{ redirect.dest_url }}
+
+  </VirtualHost>
+
+{% endfor %}
+{% endif %}
+
+# vim: syntax=apache ts=2 sw=2 sts=2 sr noet

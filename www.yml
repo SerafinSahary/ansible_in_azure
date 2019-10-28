@@ -1,0 +1,26 @@
+---
+### Main config for LAMP Cluster by Ser@fin
+
+- hosts: all
+  become_user: root
+  become: yes
+  roles:
+    - base
+    - clusterconfig
+    - etckeeper
+    - ldap
+
+- hosts: database
+  become_user: root
+  become: yes
+  roles:
+    - mariadb
+
+- hosts: webapp
+  become_user: root
+  become: yes
+  roles:
+    - apache
+    - php72
+
+# vi: set expandtab

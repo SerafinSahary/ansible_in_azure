@@ -1,0 +1,9 @@
+---
+
+- name: etckeeper repo init
+  command: "etckeeper init"
+
+- name: commit to etckeeper repo
+  command: "etckeeper commit \"commit from Ansible playbook\""
+
+# vi: set expandtab

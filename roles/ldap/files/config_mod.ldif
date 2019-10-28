@@ -1,0 +1,18 @@
+# ldapmodify -v -Y EXTERNAL -H ldapi:/// -f config_mod.ldif
+dn: cn=config
+changetype: modify
+replace: olcLogLevel
+olcLogLevel: acl stats
+
+dn: cn=config
+changetype: modify
+add: olcTLSCertificateFile
+olcTLSCertificateFile: /etc/ldap/ldap.pem
+-
+add: olcTLSCertificateKeyFile
+olcTLSCertificateKeyFile: /etc/ldap/ldap.pem
+
+dn: cn=config
+changetype: modify
+add: olcTLSCACertificateFile
+olcTLSCACertificateFile: /etc/ldap/ldap_cert.pem

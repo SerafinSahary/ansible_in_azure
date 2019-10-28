@@ -1,0 +1,22 @@
+# ldapmodify -v -Y EXTERNAL -H ldapi:/// -f config_database_mod.ldif
+dn: olcDatabase={1}mdb,cn=config
+changetype: modify
+replace: olcSuffix
+olcSuffix: dc=wencel,dc=org
+-
+replace: olcRootDN
+olcRootDN: cn=admin,dc=wencel,dc=org
+-
+replace: olcRootPW
+olcRootPW: {SSHA}zvbQvCv+aTS4WF2+dRDoEtNjjsdQbIAg
+-
+replace: olcAccess
+olcAccess: {0}to attrs=userPassword,shadowLastChange by self write
+  by anonymous auth
+  by group.exact="cn=ldapaccess,dc=wencel,dc=org" write by * none
+-
+add: olcAccess
+olcAccess: {1}to dn.base="" by * read
+-
+add: olcAccess
+olcAccess: {2}to * by group.exact="cn=ldapaccess,dc=wencel,dc=org" write by * read

@@ -1,0 +1,153 @@
+---
+
+- name: ldap packages
+  when: master_node
+  apt:
+    name: "{{ packages }}"
+    state: present
+    update_cache: no
+    force_apt_get: yes
+  vars:
+    packages:
+      - slapd
+      - ldap-utils
+      - ldapscripts
+  register: ldapinstall
+  notify: restart slapd
+  tags: ldap
+
+- name: upload ldap certificate and key
+  when: master_node and ldapinstall.changed
+  copy:
+    src: ldap.pem
+    dest: /etc/ldap/ldap.pem
+    owner: openldap
+    group: openldap
+    mode: 0600
+  tags: ldap
+
+- name: upload ldap CA certificate
+  copy:
+    src: ldap_cert.pem
+    dest: /etc/ldap/ldap_cert.pem
+    mode: 0644
+  tags: ldap
+
+- name: upload ldap scripts and files
+  when: master_node
+  copy:
+    src: "{{ item }}"
+    dest: /root/ldap/
+  loop:
+    - config_mod.ldif
+    - config_database_mod.ldif
+    - modules.ldif
+    - wencel_org.ldif
+    - config_mod.sh
+    - dit_load.sh
+    - get_dit.sh
+    - ldap-account-manager-6.8.tar.bz2
+    - openssh-lpk-schema.ldif
+    - unique.ldif
+    - ssh-ldap-pubkey.tgz
+  tags: ldap
+
+- name: amend openldap configuration using scripts
+  when: master_node and ldapinstall.changed
+  command: "{{ item }}"
+  loop:
+    - "bash /root/ldap/config_mod.sh"
+    - "bash /root/ldap/dit_load.sh"
+  tags: ldap
+
+- name: ensure slapd service will be started
+  when: master_node
+  service:
+    name: slapd
+    state: started
+    enabled: yes
+  tags: ldap
+
+- name: rsyslog&logrotate configuration for slapd
+  when: master_node
+  copy:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+    mode: 0644
+  loop:
+    - src: rsyslog.conf
+      dest: /etc/rsyslog.d/20-openldap.conf
+    - src: logrotate.conf
+      dest: /etc/logrotate.d/openldap
+  notify: restart rsyslog
+  tags: ldap
+
+- name: amend /etc/ldap/ldap.conf config
+  template:
+    src: ldap.conf.j2
+    dest: /etc/ldap/ldap.conf
+    owner: root
+    group: root
+    mode: 0644
+  tags: ldap
+
+- name: ldap client package
+  apt:
+    name: "{{ packages }}"
+    state: present
+    update_cache: no
+    force_apt_get: yes
+  vars:
+    packages:
+      - libnss-ldapd
+      - libpam-ldapd
+      - python3-setuptools
+      - python3-ldap
+      - python3-docopt
+  register: ldapclientinstall
+  tags: ldap
+
+- name: amend /etc/nslcd.conf config for ldap
+  when: ldapclientinstall.changed
+  lineinfile:
+    path: /etc/nslcd.conf
+    regexp: "{{ item.key }}"
+    line: "{{ item.line }}"
+    state: "{{ item.state }}"
+  loop:
+    - key: "^uri[\\s\\t]+ldap"
+      line: "uri ldap://{{ ldap_server_ip }}:389/"
+      state: present
+    - key: "^base\\s"
+      line: "base {{ ldap_base_dn }}"
+      state: present
+    - key: "^tls_cacertfile"
+      line: "tls_cacertfile /etc/ldap/ldap_cert.pem"
+      state: present
+  notify: restart nslcd
+  tags: ldap
+
+- name: nsswitch.conf file update
+  when: ldapclientinstall.changed
+  lineinfile:
+    path: /etc/nsswitch.conf
+    regexp: "{{ item.key }}"
+    line: "{{ item.line }}"
+    state: present
+  loop:
+    - key: "^passwd:"
+      line: "passwd:    files ldap"
+    - key: "^group:"
+      line: "group:     files ldap"
+    - key: "^shadow:"
+      line: "shadow:    files ldap"
+  tags: ldap
+
+#- name: enforce user from ldap
+#  when: ldapclientinstall.changed
+#  command: "pam-auth-update --force"
+#  tags: ldap
+
+# /etc/ldapscripts/ldapscripts.conf
+
+# vi: set expandtab

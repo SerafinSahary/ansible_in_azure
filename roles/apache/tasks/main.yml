@@ -1,0 +1,140 @@
+---
+
+- name: apache2 packages
+  apt:
+    name: "{{ packages }}"
+    state: present
+    update_cache: no
+    force_apt_get: yes
+  vars:
+    packages:
+    - apache2
+    - libapache2-mod-fcgid
+    - apachetop
+  tags: apache
+
+- name: apache2 modules cleanup
+  command: "find /etc/apache2/mods-enabled -type l -exec rm '{}' ';'"
+  notify: apache2 restart
+  tags: apache
+
+- name: enable apache2 worker
+  command: a2enmod "{{ apache2_worker.name }}"
+  notify: apache2 restart
+  tags: apache
+
+- name: prepare apache2 worker configuration
+  lineinfile:
+    path: "/etc/apache2/mods-available/{{ apache2_worker.name }}.conf"
+    backup: yes
+    state: present
+    regexp: ^[#\s]?{{ item.directive }}[\s\t]
+    line: "\t{{ item.directive }} {{ item.value }}"
+  loop:
+    - directive: StartServers
+      value: "{{ apache2_worker.startservers }}"
+    - directive: MinSpareThreads
+      value: "{{ apache2_worker.minsparethreads }}"
+    - directive: MaxSpareThreads
+      value: "{{ apache2_worker.maxsparethreads }}"
+    - directive: ThreadLimit
+      value: "{{ apache2_worker.threadlimit }}"
+    - directive: ThreadsPerChild
+      value: "{{ apache2_worker.threadsperchild }}"
+    - directive: MaxRequestWorkers
+      value: "{{ apache2_worker.maxrequestworkers }}"
+    - directive: MaxConnectionsPerChild
+      value: "{{ apache2_worker.maxconnectionsperchild }}"
+  notify: apache2 restart
+  tags: apache
+
+- name: enable apache2 modules
+  loop: "{{ apache2_modules }}"
+  command: a2enmod {{ item }}
+  notify: apache2 restart
+  tags: apache
+
+- name: update apache2 modules configuration
+  loop: "{{ apache2_module_configs }}"
+  copy:
+    src: "{{ item }}"
+    dest: /etc/apache2/mods-available
+    force: yes
+  notify: apache2 restart
+  tags: apache
+
+- name: apache2 configs cleanup
+  command: "find /etc/apache2/conf-enabled -type l -exec rm '{}' ';'"
+  notify: apache2 restart
+  tags: apache
+
+- name: copying apache2 config files
+  copy:
+    src: "{{ item }}"
+    dest: /etc/apache2/conf-available
+    force: yes
+    backup: yes
+  loop: "{{ apache2_configs }}"
+  #register: apachecopyconf
+  tags: apache
+
+- name: enable apache2 configs
+  # jeśli będzie warunkowe kasowanie kilka tasków wyżej
+  #when: apachecopyconf.changed
+  loop: "{{ apache2_configs }}"
+  command: "a2enconf {{ item | basename }}"
+  notify: apache2 restart
+  tags: apache
+
+- name: apache2 vhost configs cleanup
+  command: "find /etc/apache2/sites-enabled -type l -exec rm '{}' ';'"
+  notify: apache2 restart
+  tags: apache
+
+- name: copying apache2 default vhost configs
+  copy:
+    src: "{{ item }}"
+    dest: /etc/apache2/sites-available
+    force: yes
+    backup: yes
+  loop: "{{ apache2_defaultvhosts }}"
+  tags: apache
+
+- name: enable apache2 default vhost configs
+  loop: "{{ apache2_defaultvhosts }}"
+  command: "a2ensite {{ item | basename }}"
+  notify: apache2 restart
+  tags: apache
+
+- name: create apache2 vhosts configuration
+  loop: "{{ apache2_vhosts }}"
+  template:
+    src: vhost_tpl.conf.j2
+    dest: "/etc/apache2/sites-available/{{ item.name }}.conf"
+    owner: root
+    group: root
+    mode: 0644
+  tags: apache
+
+- name: enable apache2 vhosts configuration
+  loop: "{{ apache2_vhosts }}"
+  command: "a2ensite {{ item.name }}"
+  notify: apache2 restart
+  tags: apache
+
+- name: prepare apache2 main configuration file
+  lineinfile:
+    path: /etc/apache2/apache2.conf
+    backup: yes
+    state: present
+    regexp: ^[#\s]?{{ item.directive }}[\s\t]
+    line: "{{ item.directive }} {{ item.value }}"
+    validate: "apache2ctl -t -f %s"
+  loop: "{{ apache2_keys | dict2items(key_name='directive', value_name='value') }}"
+  notify: apache2 restart
+  tags: apache
+
+# TODO:
+# - konfiguracja niektórych modułów, np status
+
+# vi: set expandtab

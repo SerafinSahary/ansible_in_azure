@@ -1,0 +1,18 @@
+# cluster configuration tasks
+
+- name: hosts file
+  copy:
+    src: "{{ inventory_dir }}/cluster.hosts.file"
+    dest: /etc/hosts
+    force: yes
+    backup: yes
+  tags: dns
+
+- name: ssh-related config
+  import_tasks: sshstuff.yml
+
+- name: nfs-related config
+  import_tasks: nfsstuff.yml
+
+
+# vi: set expandtab:

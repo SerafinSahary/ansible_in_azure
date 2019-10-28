@@ -1,0 +1,8 @@
+---
+### handlery dla roli mariadb
+
+- name: restart mariadb-server
+  tags: mariadb
+  service:
+    name: mariadb
+    state: restarted

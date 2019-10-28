@@ -1,0 +1,42 @@
+---
+### Base packages for Ubuntu OS
+
+- name: standard packeges
+  apt:
+    name: "{{ packages }}"
+    state: present
+    autoclean: yes
+    autoremove: yes
+    update_cache: no
+    force_apt_get: yes
+  vars:
+    packages:
+    - mc
+    - postfix
+    - unzip
+    - zip
+    - apt-file
+    - apt-show-versions
+    - lynx
+    - elinks
+    - sysstat
+    - apparmor-utils
+    - htop
+    - screen
+    - apt-transport-https
+    - wget
+    - software-properties-common
+    - curl
+    - net-tools
+    - scsitools
+    - open-vm-tools
+    - mutt
+    - dnsutils
+
+- name: unattended upgrades to be disabled
+  systemd:
+    name: unattended-upgrades
+    state: stopped
+    enabled: no
+
+# vi: set expandtab:

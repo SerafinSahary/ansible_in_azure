@@ -1,0 +1,62 @@
+---
+# variables for all hosts
+
+# kolejne porty po przecinku, koniecznie bez spacji pomiędzy portami
+firewall_opentcpports: "22"
+
+# jeśli więcej niż jedna sieć potrzebna to template musi zostać zmieniony
+firewall_knownnets: "{{ backbone_net }}"
+
+sshd_config:
+  - key: PermitRootLogin
+    val: without-password
+  - key: PasswordAuthentication
+    val: "yes"
+  - key: PermitEmptyPasswords
+    val: "no"
+  - key: ChallengeResponseAuthentication
+    val: "no"
+  - key: UsePAM
+    val: "yes"
+  - key: AllowAgentForwarding
+    val: "yes"
+  - key: AllowTcpForwarding
+    val: "yes"
+  - key: X11Forwarding
+    val: "no"
+  - key: AcceptEnv
+    val: "LANG LC_*"
+  - key: Subsystem
+    val: "sftp internal-sftp"
+
+sshd_config_extra: |
+    Match Group sftpaccess
+      ChrootDirectory /srv/www
+      ForceCommand internal-sftp -d %u
+      AllowTcpForwarding no
+      X11Forwarding no
+      PasswordAuthentication yes
+
+# katalogi współdzielone przez NFS
+nfs_exports:
+  - dir: /srv/www
+    hosts: "{{ backbone_net }}"
+    params: rw,sync,no_root_squash,no_subtree_check
+  - dir: /srv/certs
+    hosts: "{{ backbone_net }}"
+    params: ro,sync,no_root_squash,no_subtree_check
+  - dir: /home
+    hosts: "{{ backbone_net }}"
+    params: rw,sync,no_root_squash,no_subtree_check
+
+nfs_server_ip: "{{ master_node_ip }}"
+
+ntp_server_ip: "{{ master_node_ip }}"
+ntp_server_external_addresses:
+  - tempus1.gum.gov.pl
+  - tempus2.gum.gov.pl
+  - vega.cbk.poznan.pl
+
+ldap_server_ip: "{{ master_node_ip }}"
+ldap_base_dn: "dc=wencel,dc=org"
+

@@ -1,0 +1,13 @@
+---
+### Main config for LAMP Cluster by Ser@fin
+
+- hosts: all
+  become_user: root
+  become: yes
+  roles:
+    - base
+    - clusterconfig
+    - etckeeper
+    - ldap
+
+# vi: set expandtab

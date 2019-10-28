@@ -1,0 +1,128 @@
+
+firewall_opentcpports: "22,80,443"
+
+apache2_keys:
+  KeepAlive: "On"
+  MaxKeepAliveRequests: 500
+
+apache2_configs:
+  - charset.conf
+  - security.conf
+  - other-vhosts-access-log.conf
+  - logging.conf
+
+apache2_module_configs:
+  - status.conf
+
+apache2_modules:
+  - access_compat
+  - alias
+  - auth_basic
+  - authn_core
+  - authn_file
+  - authz_core
+  - authz_host
+  - authz_user
+  - autoindex
+  - deflate
+  - dir
+  - env
+  - fcgid
+  - filter
+  - headers
+  - http2
+  - mime
+  - negotiation
+  - proxy
+  - proxy_fcgi
+  - reqtimeout
+  - rewrite
+  - setenvif
+  - socache_shmcb
+  - ssl
+  - status
+
+apache2_worker:
+  name: mpm_event
+  startservers: 25
+  minsparethreads: 25
+  maxsparethreads: 75
+  threadlimit: 64
+  threadsperchild: 25
+  maxrequestworkers: 400
+  maxconnectionsperchild: 250
+
+apache2_defaultvhosts:
+  - 000-default.conf
+  - 111-default-ssl.conf
+  - localhost.conf
+
+#########################################################################
+
+php72_packages:
+  - php7.2-cli
+  - php7.2-fpm
+  - php7.2-curl
+  - php7.2-gd
+  - php7.2-json
+  - php7.2-mbstring
+  - php7.2-mysql
+  - php7.2-opcache
+  - php7.2-readline
+  - php7.2-soap
+  - php7.2-sybase
+  - php7.2-xml
+  - php7.2-zip
+  - imagemagick
+
+php72_cli_ini:
+  date.timezone: "Europe/Warsaw"
+
+php72_fpm_ini:
+  post_max_size: 32M
+  upload_max_filesize: 32M
+  mail.add_x_header: "On"
+  mail.log: "/var/log/php7.2/mail.log"
+  date.timezone: "Europe/Warsaw"
+
+php72_fpm_conf:
+  error_log: "/var/log/php7.2-fpm.log"
+  log_level: "notice"
+  daemonize: "yes"
+
+#########################################################################
+
+apache2_vhosts:
+  - name: wencel_org
+    serveradmin: webmaster@wencel.org
+    vhosts:
+      - name: www.wencel.org
+        directory: "/srv/www/wencel_org/app"
+        port: 443
+        ssl:
+          key_file: /srv/certs/dummy.pem
+          cert_file: /srv/certs/dummy.pem
+        fcgi_port: 7201
+    redirects:
+      - name: www.wencel.org
+        alias: wencel.org
+        port: 80
+        code: 301
+        dest_url: https://www.wencel.org/
+
+
+#########################################################################
+
+php72_pools:
+  - name: wencel_org
+    fcgi_port: 7201
+    pool_dir: /srv/www/wencel_org
+    user: wencel_org
+    group: wencel_org
+    max_children: 16
+    start_servers: 4
+    min_spare_servers: 4
+    max_spare_servers: 8
+    max_requests: 256
+
+# vi: set expandtab:
