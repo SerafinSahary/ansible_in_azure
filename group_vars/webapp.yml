@@ -102,6 +102,7 @@ apache2_vhosts:
         ssl:
           key_file: /srv/certs/dummy.pem
           cert_file: /srv/certs/dummy.pem
+          chain_file: /srv/certs/dummy.pem
         fcgi_port: 7201
     redirects:
       - name: www.wencel.org

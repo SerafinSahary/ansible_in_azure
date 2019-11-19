@@ -47,8 +47,7 @@ objectClass: organizationalUnit
 dn: cn=serafin,ou=groups,dc=wencel,dc=org
 objectClass: posixGroup
 objectClass: top
-cn: intalio
-userPassword:: e2NyeXB0fXg=
+cn: serafin
 gidNumber: 1001
 memberUid: serafin
 
@@ -71,4 +70,28 @@ gecos: Jarek
 description: Jarek Wencel
 cn: Jarek Wencel
 cn: Ser@fin
+
+# wencel_org, groups, wencel.org
+dn: cn=wencel_org,ou=groups,dc=wencel,dc=org
+objectClass: posixGroup
+objectClass: top
+cn: wencel_org
+gidNumber: 1002
+memberUid: wencel_org
+
+# wencel_org, users, wencel.org
+dn: uid=wencel_org,ou=users,dc=wencel,dc=org
+uid: wencel_org
+objectClass: account
+objectClass: posixAccount
+objectClass: top
+objectClass: shadowAccount
+shadowLastChange: 16878
+shadowMax: 99999
+loginShell: /bin/bash
+uidNumber: 1002
+gidNumber: 1002
+homeDirectory: /srv/www/wencel_org
+description: wencel.org
+cn: wencel.org
 
