@@ -1,29 +1,6 @@
 ---
 ### MariaDB
 
-- name: MariaDB repository keys
-  tags: mariadb
-  apt_key:
-    keyserver: hkp://keyserver.ubuntu.com:80
-    id: "0xF1656F24C74CD1D8"
-    state: present
-    validate_certs: no
-
-- name: MariaDB repository definition
-  register: mariadbrepoadded
-  tags: mariadb
-  apt_repository:
-    repo: deb [arch=amd64] http://ftp.icm.edu.pl/pub/unix/database/mariadb/repo/10.3/ubuntu bionic main
-    filename: mariadb
-    state: present
-
-- name: update apt cache after repo being added
-  when: mariadbrepoadded.changed
-  tags: mariadb
-  apt:
-    update_cache: yes
-    force_apt_get: yes
-
 - name: install MariaDB
   tags: mariadb
   apt:

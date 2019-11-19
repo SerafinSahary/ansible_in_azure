@@ -29,11 +29,4 @@
     - /var/log
     - /srv/www
 
-- name: swappiness setup
-  sysctl:
-    name: vm.swappiness
-    value: 5
-    state: present
-    sysctl_file: /etc/sysctl.d/30-swappiness.conf
-
 # vi: set expandtab:

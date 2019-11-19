@@ -7,7 +7,6 @@
   roles:
     - base
     - clusterconfig
-    - etckeeper
     - ldap
 
 - hosts: database

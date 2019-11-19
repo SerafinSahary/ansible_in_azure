@@ -6,8 +6,5 @@
   become: yes
   roles:
     - base
-    - clusterconfig
-    - etckeeper
-    - ldap
 
 # vi: set expandtab
