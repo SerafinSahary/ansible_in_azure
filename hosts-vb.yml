@@ -1,0 +1,28 @@
+all:
+  hosts:
+    ls:
+      ansible_host: 192.168.33.101
+      master_node: true
+    db:
+      ansible_host: 192.168.33.102
+    www:
+      ansible_host: 192.168.33.103
+  vars:
+    ansible_user: vagrant
+    ansible_port: 22
+    ansible_python_interpreter: /usr/bin/python3
+    master_node: false
+    master_node_ip: 192.168.33.101
+    backbone_net: 192.168.33.0/24
+  children:
+    database:
+      hosts:
+        db:
+    webapp:
+      hosts:
+        www:
+    lifesupport:
+      hosts:
+       ls:
+
+# vi: set expandtab:

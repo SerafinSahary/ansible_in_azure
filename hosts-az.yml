@@ -1,0 +1,28 @@
+all:
+  hosts:
+    ls:
+      ansible_host: jpwubnt102-ls.northeurope.cloudapp.azure.com
+      master_node: true
+    db:
+      ansible_host: jpwubnt103-db.northeurope.cloudapp.azure.com
+    www:
+      ansible_host: jpwubnt104-db.northeurope.cloudapp.azure.com
+  vars:
+    ansible_user: vagrant
+    ansible_port: 22
+    ansible_python_interpreter: /usr/bin/python3
+    master_node: false
+    master_node_ip: 10.0.0.9
+    backbone_net: 10.0.0.0/24
+  children:
+    database:
+      hosts:
+        db:
+    webapp:
+      hosts:
+        www:
+    lifesupport:
+      hosts:
+       ls:
+
+# vi: set expandtab:
