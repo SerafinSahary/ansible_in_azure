@@ -58,8 +58,6 @@ objectClass: account
 objectClass: posixAccount
 objectClass: top
 objectClass: shadowAccount
-userPassword:: e2NyeXB0fSQ2JHBEa3c3RTJuJDhWaDQ4amQuRlI4Rld6Lkp2bUpUZXg3R3hqam9
- TTFJMTmk1dnd5cEJsTTNMM1NsSjREZG5vUnl0Z0R5QmZsOGxGZHNSYkNwakswL2QzajZYbWRVSjYu
 shadowLastChange: 16878
 shadowMax: 99999
 loginShell: /bin/bash

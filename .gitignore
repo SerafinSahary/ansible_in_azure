@@ -2,4 +2,4 @@
 *.log
 ssh-keys/*
 *.pem
-
+setenv.sh
